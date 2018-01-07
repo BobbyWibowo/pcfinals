@@ -1,0 +1,14 @@
+body {
+  background: white;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+header {
+  margin-bottom: 40px;
+}
+
+main {
+  flex: 1 0 auto;
+}

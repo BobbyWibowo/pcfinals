@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  div.container
+    form(action='/', method='post', enctype='multipart/form-data')
+      div.file-field.input-field
+        div.btn.blue
+          span Image
+            i.material-icons.right add_a_photo
+          input(type='file', name='image')
+        div.file-path-wrapper
+          input.file-path(type='text')
+      button.waves-effect.waves-light.btn-large.blue(type='submit' name='action') Upload
+        i.material-icons.right cloud_upload

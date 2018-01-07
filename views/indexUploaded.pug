@@ -1,0 +1,278 @@
+extends layout
+
+block headStyle
+  style.
+    .separator {
+      border-bottom: 1px solid #d0d0d0;
+      margin: 25px 0;
+    }
+
+    #canvas {
+      display: inline-block;
+      max-width: 100%;
+      border-radius: 2px;
+    }
+
+    #actions .row .col:last-child {
+      margin-bottom: -10px;
+    }
+
+    #actions .row .col a {
+      margin: 0 5px 10px 5px;
+    }
+
+    #actions .row .col a:first-child {
+      margin-left: 0;
+    }
+
+    #actions .row .col a:last-child {
+      margin-right: 0;
+    }
+
+    #ranges {
+      margin-top: 25px;
+    }
+
+    #ranges .row:last-child {
+      margin-bottom: 0;
+    }
+
+block content
+  div.container
+    div.row
+      div.col.s12
+        div.card
+          div.card-content
+            div.center-align
+              canvas#canvas.z-depth-1
+            div.separator
+            div#actions
+              div.row
+                div.col.s12.center-align
+                  a#read.waves-effect.waves-teal.btn.blue Read Image
+                    i.material-icons.right create
+                  a#original.waves-effect.waves-teal.btn.blue(disabled) Original Image
+                    i.material-icons.right filter_none
+                div.col.s12.center-align
+                  a#sobel.waves-effect.waves-teal.btn.blue(disabled) Edge: Sobel Method
+                    i.material-icons.right filter_1
+                  a#prewitt.waves-effect.waves-teal.btn.blue(disabled) Edge: Prewitt Method
+                    i.material-icons.right filter_2
+                  a#sepia.waves-effect.waves-teal.btn.blue(disabled) Sepia
+                    i.material-icons.right filter_3
+                  a#noise.waves-effect.waves-teal.btn.blue(disabled) Noise
+                    i.material-icons.right filter_4
+                  a#duotone.waves-effect.waves-teal.btn.blue(disabled) Duotone
+                    i.material-icons.right filter_5
+                  a#gamma.waves-effect.waves-teal.btn.blue(disabled) Gamma
+                    i.material-icons.right filter_6
+            div.separator
+            div#ranges
+              div.row
+                p.range-field.col.s3
+                  input#ch1(type='range' min='-255' max='255' value='0' disabled)
+                p.range-field.col.s3
+                  input#ch2(type='range' min='-255' max='255' value='0' disabled)
+                p.range-field.col.s3
+                  input#ch3(type='range' min='-255' max='255' value='0' disabled)
+                p.range-field.col.s3
+                  input#ch4(type='range' min='-255' max='255' value='255' disabled)
+              div.row
+                p.col.s12.center-align
+                  a#default.waves-effect.waves-teal.btn.blue(disabled) Default RGBA
+                    i.material-icons.right history
+    div.row
+      div.input-field.col.s12
+        input#link(type='text' value=backUrl readonly)
+        label(for='link') Return to this page with:
+
+block append bodyScripts
+  script(src='js/pc.js')
+  script.
+    $('input#link').on('click', function() {
+      $(this).select()
+    })
+
+    const canvas = $('#canvas')[0]
+    const obj = new pc(canvas)
+    obj.image2canvas('#{image}')
+
+    let tes = new Array()
+
+    const enableActions = () => {
+      // IDs of actions
+      const actions = ['original', 'sobel', 'prewitt', 'sepia', 'noise', 'duotone', 'gamma', 'default']
+      for (const action of actions) $(`#${action}`).removeAttr('disabled')
+      for (let i = 1; i <= 4; i++) {
+        $('#ch' + i).removeAttr('disabled')
+        $('#ch' + i)[0].addEventListener('input', function() {
+          rgbachange()
+        })
+      }
+    }
+
+    $('#read')[0].addEventListener('click', function() {
+      tes = obj.image2read()
+      enableActions()
+    })
+
+    $('#original')[0].addEventListener('click', function() {
+      obj.image2original()
+    })
+
+    const rgbachange = () => {
+      // copy array to array without reference
+      const tesbackup = new Array()
+      for (let c = 0; c < tes.length; c++) {
+        const temp = new Array()
+        for (let d = 0; d < 4; d++) {
+          temp.push(tes[c][d])
+        }
+        tesbackup.push(temp)
+      }
+      // end of copy
+      for (let j = 0; j < tesbackup.length; j++) {
+        tesbackup[j][0] += parseInt($('#ch1').val())
+        tesbackup[j][1] += parseInt($('#ch2').val())
+        tesbackup[j][2] += parseInt($('#ch3').val())
+        tesbackup[j][3] = parseInt($('#ch4').val())
+      }
+      obj.array2canvas(tesbackup)
+    }
+
+    $('#default')[0].addEventListener('click', function() {
+      for (let i = 1; i <= 3; i++) {
+        $('#ch' + i).val('0')
+      }
+      $('#ch4').val('255')
+      rgbachange()
+    })
+
+    $('#sobel')[0].addEventListener('click', function() {
+      let Gxtemp = new Array(4)
+      let Gytemp = new Array(4)
+      let G = new Array()
+      let xpos = 0
+      let ypos = 0
+      const cek = (x, y, n) => {
+        if (y >= 0 && x >= 0 && x < obj.width && y < obj.height) return parseInt(tes[obj.xy2i(x, y)])
+        else return 0
+      }
+      for (let i = 0; i < tes.length; i++) {
+        let Gtemp = new Array(4)
+        xpos = obj.i2x(i)
+        ypos = obj.i2y(i)
+        for (let j = 0; j < 3; j++) {
+          Gxtemp[j] = (cek(xpos - 1, ypos - 1) * -1) + (cek(xpos - 1, ypos) * -2) + (cek(xpos - 1, ypos + 1) * -1) + (cek(xpos + 1, ypos - 1)) + (cek(xpos + 1, ypos) * 2) + (cek(xpos + 1, ypos + 1))
+          Gytemp[j] = (cek(xpos - 1, ypos - 1) * -1) + (cek(xpos, ypos - 1) * -2) + (cek(xpos + 1, ypos - 1) * -1) + (cek(xpos - 1, ypos + 1)) + (cek(xpos, ypos + 1) * 2) + (cek(xpos + 1, ypos + 1))
+          Gtemp[j] = Math.floor(Math.sqrt((parseInt(Gxtemp[j]) * parseInt(Gxtemp[j])) + (parseInt(Gytemp[j]) * parseInt(Gytemp[j]))))
+        }
+        Gtemp[3] = tes[i][3]
+        G.push(Gtemp)
+      }
+      obj.array2canvas(G)
+    })
+
+    $('#prewitt')[0].addEventListener('click', function() {
+      let Gxtemp = new Array(4)
+      let Gytemp = new Array(4)
+      let G = new Array()
+      let xpos = 0
+      let ypos = 0
+      const cek = (x, y, n) => {
+        if (y >= 0 && x >= 0 && x < obj.width && y < obj.height) return parseInt(tes[obj.xy2i(x, y)])
+        else return 0
+      }
+      for (let i = 0; i < tes.length; i++) {
+        let Gtemp = new Array(4)
+        xpos = obj.i2x(i)
+        ypos = obj.i2y(i)
+        for (let j = 0; j < 3; j++) {
+          Gxtemp[j] = (cek(xpos - 1, ypos - 1) * -1) + (cek(xpos - 1, ypos) * -1) + (cek(xpos - 1, ypos + 1) * -1) + (cek(xpos + 1, ypos - 1)) + (cek(xpos + 1, ypos)) + (cek(xpos + 1, ypos + 1))
+          Gytemp[j] = (cek(xpos - 1, ypos - 1) * -1) + (cek(xpos, ypos - 1) * -1) + (cek(xpos + 1, ypos - 1) * -1) + (cek(xpos - 1, ypos + 1)) + (cek(xpos, ypos + 1)) + (cek(xpos + 1, ypos + 1))
+          Gtemp[j] = Math.floor(Math.sqrt((parseInt(Gxtemp[j]) * parseInt(Gxtemp[j])) + (parseInt(Gytemp[j]) * parseInt(Gytemp[j]))))
+        }
+        Gtemp[3] = tes[i][3]
+        G.push(Gtemp)
+      }
+      obj.array2canvas(G)
+    })
+
+    $('#sepia')[0].addEventListener('click', function() {
+      // copy array to array without reference
+      const tesbackup = new Array()
+      for (let c = 0; c < tes.length; c++) {
+        const temp = new Array()
+        for (let d = 0; d < 4; d++) {
+          temp.push(tes[c][d])
+        }
+        tesbackup.push(temp)
+      }
+      // end of copy
+      for (let i = 0; i < tesbackup.length; i++) {
+        // Source: https://www.techrepublic.com/blog/how-do-i/how-do-i-convert-images-to-grayscale-and-sepia-tone-using-c/
+        tesbackup[i][0] = Math.min(255, (tes[i][0] * .393) + (tes[i][1] * .796) + (tes[i][2] * .189))
+        tesbackup[i][1] = Math.min(255, (tes[i][0] * .349) + (tes[i][1] * .686) + (tes[i][2] * .168))
+        tesbackup[i][2] = Math.min(255, (tes[i][0] * .272) + (tes[i][1] * .534) + (tes[i][2] * .131))
+      }
+      obj.array2canvas(tesbackup)
+    })
+
+    $('#noise')[0].addEventListener('click', function() {
+      // copy array to array without reference
+      const tesbackup = new Array()
+      for (let c = 0; c < tes.length; c++) {
+        const temp = new Array()
+        for (let d = 0; d < 4; d++) {
+          temp.push(tes[c][d])
+        }
+        tesbackup.push(temp)
+      }
+      // end of copy
+      for (let i = 0; i < tesbackup.length; i++) {
+        // Source: https://code.msdn.microsoft.com/Image-Filters-in-Javascript-0853f6c1
+        let mod = Math.floor((Math.random() * 64) - 32)
+        tesbackup[i][0] = Math.min(255, tes[i][0] + mod)
+        tesbackup[i][1] = Math.min(255, tes[i][1] + mod)
+        tesbackup[i][2] = Math.min(255, tes[i][2] + mod)
+      }
+      obj.array2canvas(tesbackup)
+    })
+
+    $('#duotone')[0].addEventListener('click', function() {
+      // copy array to array without reference
+      const tesbackup = new Array()
+      for (let c = 0; c < tes.length; c++) {
+        const temp = new Array()
+        for (let d = 0; d < 4; d++) {
+          temp.push(tes[c][d])
+        }
+        tesbackup.push(temp)
+      }
+      // end of copy
+      for (let i = 0; i < tesbackup.length; i++) {
+        // Source: https://code.msdn.microsoft.com/Image-Filters-in-Javascript-0853f6c1
+        tesbackup[i][0] = (tes[i][0] + tes[i][1] + tes[i][2]) / 3
+      }
+      obj.array2canvas(tesbackup)
+    })
+
+    $('#gamma')[0].addEventListener('click', function() {
+      // copy array to array without reference
+      const tesbackup = new Array()
+      for (let c = 0; c < tes.length; c++) {
+        const temp = new Array()
+        for (let d = 0; d < 4; d++) {
+          temp.push(tes[c][d])
+        }
+        tesbackup.push(temp)
+      }
+      // end of copy
+      for (let i = 0; i < tesbackup.length; i++) {
+        // Source: https://code.msdn.microsoft.com/Image-Filters-in-Javascript-0853f6c1
+        tesbackup[i][0] = 255 * Math.pow(tes[i][0] / 255, .2)
+        tesbackup[i][1] = 255 * Math.pow(tes[i][1] / 255, .2)
+        tesbackup[i][2] = 255 * Math.pow(tes[i][2] / 255, .2)
+      }
+      obj.array2canvas(tesbackup)
+    })

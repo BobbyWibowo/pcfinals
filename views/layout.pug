@@ -1,0 +1,68 @@
+doctype html
+html
+  head
+    title #{title}
+    // Let browser know website is optimized for mobile
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    link(rel="shortcut icon" href="/favicon.ico")
+    // Import Google Icon Font
+    link(type='text/css' href='/fonts/material-icons/material-icons.css' rel='stylesheet')
+    // Import materialize.css
+    link(type='text/css' href='/css/materialize.min.css' rel='stylesheet' media='screen,projection')
+    link(type='text/css' href='/css/index.css' rel='stylesheet')
+    block headStyle
+  body
+    header
+      block header
+        nav.blue(role='navigation')
+          div.nav-wrapper.container
+            a.brand-logo(href='/') Stuff
+              i.material-icons all_inclusive
+            // Menus
+            -
+              const menus = [
+                {
+                  path: '/',
+                  icon: 'home',
+                  title: 'Home'
+                },
+                {
+                  path:'/about',
+                  icon: 'people',
+                  title: 'About Us'
+                }
+              ]
+            // Typical navigation menu for desktop
+            ul.right.hide-on-med-and-down
+              each menu in menus
+                li(class={active: path === menu.path})
+                  a(href=menu.path) #{menu.title}
+                    i.material-icons.left #{menu.icon}
+            // Side navigation menu for mobile
+            ul#nav-mobile.side-nav
+              each menu in menus
+                li(class={active: path === menu.path})
+                  a(href=menu.path) #{menu.title}
+                    i.material-icons.left #{menu.icon}
+            a.button-collapse(href='#' data-activates='nav-mobile')
+              i.material-icons menu
+    main
+      block content
+    footer
+      block footer
+        footer.blue.page-footer
+            div.container
+              div.row
+                div.col.s12
+                  h5.white-text Footer
+                  p.grey-text.text-lighten-4 Fill this with stuff. I guess.
+            div.footer-copyright
+              div.container MIT License
+                a.grey-text.text-lighten-4.right(href='https://github.com/BobbyWibowo/') GitHub
+    block bodyScripts
+      script(type='text/javascript' src='/js/jquery-3.2.1.min.js')
+      script(type='text/javascript' src='/js/materialize.min.js')
+      script.
+        $(".button-collapse").sideNav({
+          draggable: true
+        });
