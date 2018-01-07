@@ -6,7 +6,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "node ."
+    "start": "node .",
+    "background": "screen -dmS pcfinals node .",
+    "pm2": "pm2 start --name pcfinals ."
   },
   "standard": {
     "globals": [
