@@ -54,17 +54,17 @@ block content
                   a#original.waves-effect.waves-teal.btn.blue(disabled) Original Image
                     i.material-icons.right filter_none
                 div.col.s12.center-align
-                  a#sobel.waves-effect.waves-teal.btn.blue(disabled) Edge: Sobel Method
-                    i.material-icons.right filter_1
-                  a#prewitt.waves-effect.waves-teal.btn.blue(disabled) Edge: Prewitt Method
-                    i.material-icons.right filter_2
                   a#sepia.waves-effect.waves-teal.btn.blue(disabled) Sepia
-                    i.material-icons.right filter_3
+                    i.material-icons.right filter_1
                   a#noise.waves-effect.waves-teal.btn.blue(disabled) Noise
-                    i.material-icons.right filter_4
+                    i.material-icons.right filter_2
                   a#duotone.waves-effect.waves-teal.btn.blue(disabled) Duotone
-                    i.material-icons.right filter_5
+                    i.material-icons.right filter_3
                   a#gamma.waves-effect.waves-teal.btn.blue(disabled) Gamma
+                    i.material-icons.right filter_4
+                  a#sobel.waves-effect.waves-teal.btn.blue(disabled) Edge: Sobel Method
+                    i.material-icons.right filter_5
+                  a#prewitt.waves-effect.waves-teal.btn.blue(disabled) Edge: Prewitt Method
                     i.material-icons.right filter_6
             div.separator
             div#ranges
@@ -89,8 +89,8 @@ block content
 block append bodyScripts
   script(src='js/pc.js')
   script.
-    $('input#link').on('click', function() {
-      $(this).select()
+    document.getElementById('link').addEventListener('click', function() {
+      this.select()
     })
 
     const canvas = $('#canvas')[0]
@@ -102,25 +102,33 @@ block append bodyScripts
     const enableActions = () => {
       // IDs of actions
       const actions = ['original', 'sobel', 'prewitt', 'sepia', 'noise', 'duotone', 'gamma', 'default']
-      for (const action of actions) $(`#${action}`).removeAttr('disabled')
+      for (const action of actions) {
+        document.getElementById(action).removeAttribute('disabled')
+        $(`#${action}`).removeAttr('disabled')
+      }
       for (let i = 1; i <= 4; i++) {
-        $('#ch' + i).removeAttr('disabled')
-        $('#ch' + i)[0].addEventListener('input', function() {
-          rgbachange()
-        })
+        const element = document.getElementById('ch' + i)
+        element.removeAttribute('disabled')
+        element.addEventListener('input', () => rgbachange())
       }
     }
 
-    $('#read')[0].addEventListener('click', function() {
+    document.getElementById('read').addEventListener('click', function() {
       tes = obj.image2read()
       enableActions()
     })
 
-    $('#original')[0].addEventListener('click', function() {
+    document.getElementById('original').addEventListener('click', function() {
+      defaultrgba()
       obj.image2original()
     })
 
     const rgbachange = () => {
+      // values
+      const ch1 = parseInt(document.getElementById('ch1').value)
+      const ch2 = parseInt(document.getElementById('ch2').value)
+      const ch3 = parseInt(document.getElementById('ch3').value)
+      const ch4 = parseInt(document.getElementById('ch4').value)
       // copy array to array without reference
       const tesbackup = new Array()
       for (let c = 0; c < tes.length; c++) {
@@ -132,29 +140,33 @@ block append bodyScripts
       }
       // end of copy
       for (let j = 0; j < tesbackup.length; j++) {
-        tesbackup[j][0] += parseInt($('#ch1').val())
-        tesbackup[j][1] += parseInt($('#ch2').val())
-        tesbackup[j][2] += parseInt($('#ch3').val())
-        tesbackup[j][3] = parseInt($('#ch4').val())
+        tesbackup[j][0] += ch1
+        tesbackup[j][1] += ch2
+        tesbackup[j][2] += ch3
+        tesbackup[j][3] = ch4
       }
       obj.array2canvas(tesbackup)
     }
 
-    $('#default')[0].addEventListener('click', function() {
-      for (let i = 1; i <= 3; i++) {
-        $('#ch' + i).val('0')
-      }
-      $('#ch4').val('255')
+    const defaultrgba = () => {
+      document.getElementById('ch1').value = 0
+      document.getElementById('ch2').value = 0
+      document.getElementById('ch3').value = 0
+      document.getElementById('ch4').value = 255
+    }
+
+    document.getElementById('default').addEventListener('click', function() {
+      defaultrgba()
       rgbachange()
     })
 
-    $('#sobel')[0].addEventListener('click', function() {
+    document.getElementById('sobel').addEventListener('click', function() {
       let Gxtemp = new Array(4)
       let Gytemp = new Array(4)
       let G = new Array()
       let xpos = 0
       let ypos = 0
-      const cek = (x, y, n) => {
+      const check = (x, y, n) => {
         if (y >= 0 && x >= 0 && x < obj.width && y < obj.height) return parseInt(tes[obj.xy2i(x, y)])
         else return 0
       }
@@ -163,8 +175,8 @@ block append bodyScripts
         xpos = obj.i2x(i)
         ypos = obj.i2y(i)
         for (let j = 0; j < 3; j++) {
-          Gxtemp[j] = (cek(xpos - 1, ypos - 1) * -1) + (cek(xpos - 1, ypos) * -2) + (cek(xpos - 1, ypos + 1) * -1) + (cek(xpos + 1, ypos - 1)) + (cek(xpos + 1, ypos) * 2) + (cek(xpos + 1, ypos + 1))
-          Gytemp[j] = (cek(xpos - 1, ypos - 1) * -1) + (cek(xpos, ypos - 1) * -2) + (cek(xpos + 1, ypos - 1) * -1) + (cek(xpos - 1, ypos + 1)) + (cek(xpos, ypos + 1) * 2) + (cek(xpos + 1, ypos + 1))
+          Gxtemp[j] = (check(xpos - 1, ypos - 1) * -1) + (check(xpos - 1, ypos) * -2) + (check(xpos - 1, ypos + 1) * -1) + (check(xpos + 1, ypos - 1)) + (check(xpos + 1, ypos) * 2) + (check(xpos + 1, ypos + 1))
+          Gytemp[j] = (check(xpos - 1, ypos - 1) * -1) + (check(xpos, ypos - 1) * -2) + (check(xpos + 1, ypos - 1) * -1) + (check(xpos - 1, ypos + 1)) + (check(xpos, ypos + 1) * 2) + (check(xpos + 1, ypos + 1))
           Gtemp[j] = Math.floor(Math.sqrt((parseInt(Gxtemp[j]) * parseInt(Gxtemp[j])) + (parseInt(Gytemp[j]) * parseInt(Gytemp[j]))))
         }
         Gtemp[3] = tes[i][3]
@@ -173,13 +185,13 @@ block append bodyScripts
       obj.array2canvas(G)
     })
 
-    $('#prewitt')[0].addEventListener('click', function() {
+    document.getElementById('prewitt').addEventListener('click', function() {
       let Gxtemp = new Array(4)
       let Gytemp = new Array(4)
       let G = new Array()
       let xpos = 0
       let ypos = 0
-      const cek = (x, y, n) => {
+      const check = (x, y, n) => {
         if (y >= 0 && x >= 0 && x < obj.width && y < obj.height) return parseInt(tes[obj.xy2i(x, y)])
         else return 0
       }
@@ -188,8 +200,8 @@ block append bodyScripts
         xpos = obj.i2x(i)
         ypos = obj.i2y(i)
         for (let j = 0; j < 3; j++) {
-          Gxtemp[j] = (cek(xpos - 1, ypos - 1) * -1) + (cek(xpos - 1, ypos) * -1) + (cek(xpos - 1, ypos + 1) * -1) + (cek(xpos + 1, ypos - 1)) + (cek(xpos + 1, ypos)) + (cek(xpos + 1, ypos + 1))
-          Gytemp[j] = (cek(xpos - 1, ypos - 1) * -1) + (cek(xpos, ypos - 1) * -1) + (cek(xpos + 1, ypos - 1) * -1) + (cek(xpos - 1, ypos + 1)) + (cek(xpos, ypos + 1)) + (cek(xpos + 1, ypos + 1))
+          Gxtemp[j] = (check(xpos - 1, ypos - 1) * -1) + (check(xpos - 1, ypos) * -1) + (check(xpos - 1, ypos + 1) * -1) + (check(xpos + 1, ypos - 1)) + (check(xpos + 1, ypos)) + (check(xpos + 1, ypos + 1))
+          Gytemp[j] = (check(xpos - 1, ypos - 1) * -1) + (check(xpos, ypos - 1) * -1) + (check(xpos + 1, ypos - 1) * -1) + (check(xpos - 1, ypos + 1)) + (check(xpos, ypos + 1)) + (check(xpos + 1, ypos + 1))
           Gtemp[j] = Math.floor(Math.sqrt((parseInt(Gxtemp[j]) * parseInt(Gxtemp[j])) + (parseInt(Gytemp[j]) * parseInt(Gytemp[j]))))
         }
         Gtemp[3] = tes[i][3]
@@ -198,7 +210,7 @@ block append bodyScripts
       obj.array2canvas(G)
     })
 
-    $('#sepia')[0].addEventListener('click', function() {
+    document.getElementById('sepia').addEventListener('click', function() {
       // copy array to array without reference
       const tesbackup = new Array()
       for (let c = 0; c < tes.length; c++) {
@@ -218,7 +230,7 @@ block append bodyScripts
       obj.array2canvas(tesbackup)
     })
 
-    $('#noise')[0].addEventListener('click', function() {
+    document.getElementById('noise').addEventListener('click', function() {
       // copy array to array without reference
       const tesbackup = new Array()
       for (let c = 0; c < tes.length; c++) {
@@ -239,7 +251,7 @@ block append bodyScripts
       obj.array2canvas(tesbackup)
     })
 
-    $('#duotone')[0].addEventListener('click', function() {
+    document.getElementById('duotone').addEventListener('click', function() {
       // copy array to array without reference
       const tesbackup = new Array()
       for (let c = 0; c < tes.length; c++) {
@@ -257,7 +269,7 @@ block append bodyScripts
       obj.array2canvas(tesbackup)
     })
 
-    $('#gamma')[0].addEventListener('click', function() {
+    document.getElementById('gamma').addEventListener('click', function() {
       // copy array to array without reference
       const tesbackup = new Array()
       for (let c = 0; c < tes.length; c++) {
