@@ -16,18 +16,18 @@ html
       block header
         nav.blue(role='navigation')
           div.nav-wrapper.container
-            a.brand-logo(href='/') Stuff
+            a.brand-logo(href='.') Stuff
               i.material-icons all_inclusive
             // Menus
             -
               const menus = [
                 {
-                  path: '/',
+                  path: '.',
                   icon: 'home',
                   title: 'Home'
                 },
                 {
-                  path:'/about',
+                  path:'about',
                   icon: 'people',
                   title: 'About Us'
                 }
