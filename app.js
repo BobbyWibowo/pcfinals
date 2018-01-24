@@ -64,10 +64,11 @@ app.get('/about', about.get)
 
 // NOTE: Uses fiery-me branch of https://github.com/BobbyWibowo/HttpErrorPages
 app.use((req, res, next) => {
-  const errorCodes = [400, 401, 403, 404, 500, 501, 502, 503, 520, 521, 533]
-  for (const e of errorCodes) {
-    res.status(e).sendFile(`HTTP${e}.html`, { root: '../HttpErrorPages/dist/' })
-  }
+  res.status(404).sendFile('HTTP404.html', { root: '../HttpErrorPages/dist/' })
+})
+app.use((err, req, res, next) => {
+  console.error(err)
+  res.status(500).sendFile('HTTP505.html', { root: '../HttpErrorPages/dist/' })
 })
 
 // NOTE: Error handling middleware should be loaded after the loading of the routes
