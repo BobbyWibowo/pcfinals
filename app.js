@@ -33,9 +33,9 @@ const upload = multer({ storage })
 const app = express()
 
 app.set('port', process.env.PORT || 3000)
-app.set('views', path.join(__dirname, '/views'))
+app.set('views', './views')
 app.set('view engine', 'pug')
-app.use(favicon(path.join(__dirname, '/public/favicon.ico')))
+app.use(favicon('./public/favicon.ico'))
 app.use(logger('dev'))
 app.use(methodOverride())
 app.use(session({
@@ -47,7 +47,16 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({
   extended: true
 }))
-app.use(express.static(path.join(__dirname, '/public')))
+
+app.use('/', express.static('./public', {
+  setHeaders: (res, path, stat) => {
+    if (/\.(3gp|gif|jpg|jpeg|png|ico|wmv|avi|asf|asx|mpg|mpeg|mp4|pls|mp3|mid|wav|swf|flv|exe|zip|tar|rar|gz|tgz|bz2|uha|7z|doc|docx|xls|xlsx|pdf|iso|js|css|eot|svg|ttf|woff|woff2)$/.test(path)) {
+      const day = 86400
+      res.set('Access-Control-Allow-Origin', '*')
+      res.set('Cache-Control', `public, max-age=${day * 30}, must-revalidate, proxy-revalidate, immutable, stale-while-revalidate=86400, stale-if-error=604800`) // 30 days
+    }
+  }
+}))
 
 app.get('/', index.get)
 app.post('/', upload.single('image'), index.post)
