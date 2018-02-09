@@ -62,7 +62,7 @@ app.get('/', index.get)
 app.post('/', upload.single('image'), index.post)
 app.get('/about', about.get)
 
-// NOTE: Uses fiery-me branch of https://github.com/BobbyWibowo/HttpErrorPages
+// NOTE: Uses fiery.me branch of https://github.com/BobbyWibowo/HttpErrorPages
 app.use((req, res, next) => {
   res.status(404).sendFile('HTTP404.html', { root: '../HttpErrorPages/dist/' })
 })
